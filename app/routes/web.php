@@ -14,7 +14,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    $tasks = \App\Task::orderBy("due_date")->get();
+
+    return view('welcome')->with('tasks', $tasks);
 });
 
 Auth::routes();
