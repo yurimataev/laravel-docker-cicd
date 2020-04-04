@@ -8,8 +8,8 @@ ENV DB_PASSWORD=your_laravel_db_password
 
 # Install packages
 RUN apk --no-cache add php7 php7-fpm php7-pdo php7-pdo_mysql php7-json php7-openssl php7-curl \
-    php7-zlib php7-xml php7-phar php7-intl php7-dom php7-xmlreader php7-ctype php7-session \
-    php7-mbstring php7-gd nginx supervisor curl
+    php7-zlib php7-xml php7-phar php7-intl php7-dom php7-xmlreader php7-xmlwriter php7-ctype \
+    php7-session php7-mbstring php7-gd php7-fileinfo php7-tokenizer nginx supervisor curl
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -28,6 +28,14 @@ COPY nginx-php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN mkdir -p /var/www
 RUN mkdir -p /run/nginx
 
+# Copy the app into document root
+# Irrelevant in the dev environment (because of mounted volume), necessary for production
+WORKDIR /var/www
+COPY app /var/www
+
+# Install composer dependencies
+RUN composer install
+
 # Make sure files/folders needed by the processes are accessable when they run under the nobody user
 RUN chown -R nobody.nobody /var/www && \
   chown -R nobody.nobody /run && \
@@ -36,11 +44,6 @@ RUN chown -R nobody.nobody /var/www && \
 
 # Switch to use a non-root user from here on
 USER nobody
-
-# Copy the app into document root
-# Irrelevant in the dev environment, necessary for production
-WORKDIR /var/www
-COPY --chown=nobody app/ /var/www/
 
 # Expose the port nginx is reachable on
 EXPOSE 8080
