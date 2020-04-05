@@ -2,6 +2,7 @@ FROM alpine:3.11
 
 # Set up environment variables
 ENV DB_HOST=db
+ENV DB_PORT=3306
 ENV DB_DATABASE=laravel
 ENV DB_USERNAME=laraveluser
 ENV DB_PASSWORD=your_laravel_db_password
@@ -24,7 +25,7 @@ COPY nginx-php/php.ini /etc/php7/conf.d/custom.ini
 # Configure supervisord
 COPY nginx-php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Setup document root
+# Setup directories
 RUN mkdir -p /var/www
 RUN mkdir -p /run/nginx
 
@@ -41,6 +42,9 @@ RUN chown -R nobody.nobody /var/www && \
   chown -R nobody.nobody /run && \
   chown -R nobody.nobody /var/lib/nginx && \
   chown -R nobody.nobody /var/log/nginx
+
+# Copy .env.example to .env
+RUN cp /var/www/.env.example /var/www/.env
 
 # Switch to use a non-root user from here on
 USER nobody
